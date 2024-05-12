@@ -10,15 +10,15 @@ class PolygonBox(BaseModel):
     polygon: List[List[float]]
     confidence: Optional[float] = None
 
-    @field_validator('polygon')
+    @field_validator("polygon")
     @classmethod
     def check_elements(cls, v: List[List[float]]) -> List[List[float]]:
         if len(v) != 4:
-            raise ValueError('corner must have 4 elements')
+            raise ValueError("corner must have 4 elements")
 
         for corner in v:
             if len(corner) != 2:
-                raise ValueError('corner must have 2 elements')
+                raise ValueError("corner must have 2 elements")
         return v
 
     @property
@@ -36,7 +36,12 @@ class PolygonBox(BaseModel):
     @computed_field
     @property
     def bbox(self) -> List[float]:
-        box = [self.polygon[0][0], self.polygon[0][1], self.polygon[1][0], self.polygon[2][1]]
+        box = [
+            self.polygon[0][0],
+            self.polygon[0][1],
+            self.polygon[1][0],
+            self.polygon[2][1],
+        ]
         if box[0] > box[2]:
             box[0], box[2] = box[2], box[0]
         if box[1] > box[3]:
@@ -72,8 +77,16 @@ class PolygonBox(BaseModel):
         self.polygon = [[x1, y1], [x2, y1], [x2, y2], [x1, y2]]
 
     def intersection_area(self, other, margin=0):
-        x_overlap = max(0, min(self.bbox[2], other.bbox[2] - margin) - max(self.bbox[0], other.bbox[0] + margin))
-        y_overlap = max(0, min(self.bbox[3], other.bbox[3] - margin) - max(self.bbox[1], other.bbox[1] + margin))
+        x_overlap = max(
+            0,
+            min(self.bbox[2], other.bbox[2] - margin)
+            - max(self.bbox[0], other.bbox[0] + margin),
+        )
+        y_overlap = max(
+            0,
+            min(self.bbox[3], other.bbox[3] - margin)
+            - max(self.bbox[1], other.bbox[1] + margin),
+        )
         return x_overlap * y_overlap
 
     def intersection_pct(self, other, margin=0):
@@ -90,11 +103,11 @@ class PolygonBox(BaseModel):
 class Bbox(BaseModel):
     bbox: List[float]
 
-    @field_validator('bbox')
+    @field_validator("bbox")
     @classmethod
     def check_4_elements(cls, v: List[float]) -> List[float]:
         if len(v) != 4:
-            raise ValueError('bbox must have 4 elements')
+            raise ValueError("bbox must have 4 elements")
         return v
 
     def rescale_bbox(self, orig_size, new_size):
@@ -117,7 +130,12 @@ class Bbox(BaseModel):
 
     @property
     def polygon(self):
-        return [[self.bbox[0], self.bbox[1]], [self.bbox[2], self.bbox[1]], [self.bbox[2], self.bbox[3]], [self.bbox[0], self.bbox[3]]]
+        return [
+            [self.bbox[0], self.bbox[1]],
+            [self.bbox[2], self.bbox[1]],
+            [self.bbox[2], self.bbox[3]],
+            [self.bbox[0], self.bbox[3]],
+        ]
 
 
 class LayoutBox(PolygonBox):
@@ -144,6 +162,11 @@ class OCRResult(BaseModel):
     image_bbox: List[float]
 
 
+class LayoutOCRBox(PolygonBox):
+    label: str
+    text_lines: List[TextLine]
+
+
 class TextDetectionResult(BaseModel):
     bboxes: List[PolygonBox]
     vertical_lines: List[ColumnLine]
@@ -155,6 +178,12 @@ class TextDetectionResult(BaseModel):
 
 class LayoutResult(BaseModel):
     bboxes: List[LayoutBox]
+    segmentation_map: Any
+    image_bbox: List[float]
+
+
+class LayoutOCRResult(BaseModel):
+    bboxes: List[LayoutOCRBox]
     segmentation_map: Any
     image_bbox: List[float]
 

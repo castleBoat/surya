@@ -10,7 +10,8 @@ import os
 class Settings(BaseSettings):
     # General
     TORCH_DEVICE: Optional[str] = None
-    IMAGE_DPI: int = 96
+    # IMAGE_DPI: int = 96
+    IMAGE_DPI: int = 200
 
     # Paths
     DATA_DIR: str = "data"
@@ -43,19 +44,29 @@ class Settings(BaseSettings):
         return "cpu"
 
     # Text detection
-    DETECTOR_BATCH_SIZE: Optional[int] = None # Defaults to 2 for CPU, 32 otherwise
+    DETECTOR_BATCH_SIZE: Optional[int] = None  # Defaults to 2 for CPU, 32 otherwise
     DETECTOR_MODEL_CHECKPOINT: str = "vikp/surya_det2"
     DETECTOR_MATH_MODEL_CHECKPOINT: str = "vikp/surya_det_math"
     DETECTOR_BENCH_DATASET_NAME: str = "vikp/doclaynet_bench"
-    DETECTOR_IMAGE_CHUNK_HEIGHT: int = 1400 # Height at which to slice images vertically
-    DETECTOR_TEXT_THRESHOLD: float = 0.6 # Threshold for text detection (above this is considered text)
-    DETECTOR_BLANK_THRESHOLD: float = 0.35 # Threshold for blank space (below this is considered blank)
-    DETECTOR_POSTPROCESSING_CPU_WORKERS: int = min(8, os.cpu_count()) # Number of workers for postprocessing
+    DETECTOR_IMAGE_CHUNK_HEIGHT: int = (
+        1400  # Height at which to slice images vertically
+    )
+    DETECTOR_TEXT_THRESHOLD: float = (
+        0.6  # Threshold for text detection (above this is considered text)
+    )
+    DETECTOR_BLANK_THRESHOLD: float = (
+        0.35  # Threshold for blank space (below this is considered blank)
+    )
+    DETECTOR_POSTPROCESSING_CPU_WORKERS: int = min(
+        8, os.cpu_count()
+    )  # Number of workers for postprocessing
 
     # Text recognition
     RECOGNITION_MODEL_CHECKPOINT: str = "vikp/surya_rec"
     RECOGNITION_MAX_TOKENS: int = 175
-    RECOGNITION_BATCH_SIZE: Optional[int] = None # Defaults to 8 for CPU/MPS, 256 otherwise
+    RECOGNITION_BATCH_SIZE: Optional[
+        int
+    ] = None  # Defaults to 8 for CPU/MPS, 256 otherwise
     RECOGNITION_IMAGE_SIZE: Dict = {"height": 196, "width": 896}
     RECOGNITION_RENDER_FONTS: Dict[str, str] = {
         "all": os.path.join(FONT_DIR, "GoNotoCurrent-Regular.ttf"),
@@ -63,9 +74,11 @@ class Settings(BaseSettings):
         "ja": os.path.join(FONT_DIR, "GoNotoCJKCore.ttf"),
         "ko": os.path.join(FONT_DIR, "GoNotoCJKCore.ttf"),
     }
-    RECOGNITION_FONT_DL_BASE: str = "https://github.com/satbyy/go-noto-universal/releases/download/v7.0"
+    RECOGNITION_FONT_DL_BASE: str = (
+        "https://github.com/satbyy/go-noto-universal/releases/download/v7.0"
+    )
     RECOGNITION_BENCH_DATASET_NAME: str = "vikp/rec_bench"
-    RECOGNITION_PAD_VALUE: int = 0 # Should be 0 or 255
+    RECOGNITION_PAD_VALUE: int = 0  # Should be 0 or 255
 
     # Layout
     LAYOUT_MODEL_CHECKPOINT: str = "vikp/surya_layout2"
