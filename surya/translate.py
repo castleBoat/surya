@@ -10,6 +10,7 @@ from surya.schema import (
     LayoutOCRResult,
 )
 from surya.postprocessing.textwrap_japanese import fw_fill
+from surya.settings import settings
 from PIL import Image, ImageDraw, ImageFont
 import numpy as np
 import matplotlib.pyplot as plt
@@ -17,7 +18,7 @@ import PyPDF2
 import requests
 
 
-FONT_SIZE = 21
+FONT_SIZE = 19
 font = ImageFont.truetype(
     "static/fonts/SourceHanSerif-Light.otf",
     size=FONT_SIZE,
@@ -63,7 +64,8 @@ def sort_ocr_lines(lines: List[TextLine]) -> List[TextLine]:
 
 
 def translate_text(text: str) -> str:
-    url = "http://127.0.0.1:8332"
+    return text
+    url = "http://192.168.31.174:8332"
     data = {
         "content": text,
     }
@@ -74,6 +76,11 @@ def translate_text(text: str) -> str:
     return resp.json()["content"]
 
 
+# 1. layout 的 text bbox 与 text detection 的 bbox 求交
+# 2. 相交的 texts 排序，合并成一个 text
+# 3. 翻译 text
+# 4. draw translated_text on image
+# 5. merge images into a pdf
 def draw_text_on_image(img: np.ndarray, bbox: List[float], text: str) -> np.ndarray:
     processed_text = fw_fill(text, width=int((bbox[2] - bbox[0]) / (FONT_SIZE / 2)))
     new_block = Image.new(
@@ -101,6 +108,8 @@ def draw_text_on_image(img: np.ndarray, bbox: List[float], text: str) -> np.ndar
 
 def save_as_pdf(image: np.ndarray, file_name: str):
     # Create a figure and axes
+    # print("image shape: ", image.shape)  # (1850, 1500, 3)
+    # 分辨率问题解决了，这里固定的 10，14 inch 可能比原始大，尝试从原始大 pdfPage 获取大小，保存和原始相同大小
     fig, ax = plt.subplots(figsize=(10, 14))
 
     # Display the image
@@ -110,8 +119,12 @@ def save_as_pdf(image: np.ndarray, file_name: str):
     plt.axis("off")
 
     # Save the figure
-    plt.savefig(file_name, format="pdf", bbox_inches="tight", pad_inches=0)
+    plt.savefig(file_name, format="pdf", dpi=settings.IMAGE_DPI)
     plt.close(fig)
+
+
+def cal_words(text: str) -> int:
+    return len(text.split())
 
 
 def __merge_pdfs(pdf_files: List[str], file_name: str) -> None:
@@ -154,6 +167,8 @@ def draw_orc_on_images(
             text_lines = sort_ocr_lines(layout_ocr_bbox.text_lines)
             texts = [text_line.text for text_line in text_lines]
             src_text = "".join(texts)
+            if cal_words(src_text) <= 20:
+                continue
             tgt_text = translate_text(src_text)
             img = draw_text_on_image(img, layout_ocr_bbox.bbox, tgt_text)
         # save image as one pdf

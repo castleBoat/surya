@@ -116,11 +116,6 @@ def main():
         images, layout_model, layout_processor, line_predictions
     )
 
-    # 1. layout 的 text bbox 与 text detection 的 bbox 求交
-    # 2. 相交的 texts 排序，合并成一个 text
-    # 3. 翻译 text
-    # 4. draw translated_text on image
-    # 5. merge images into a pdf
     draw_orc_on_images(result_path, images, layout_predictions, predictions_by_image)
 
     if args.images:
